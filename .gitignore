@@ -1,0 +1,13 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+.env
+
+#directories
+venv/
+bin/
+__pycache__/
+
+#general files
+twitch_tokens.json
+spotify_tokens.json
+test.py
+scratch.txt
