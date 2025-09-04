@@ -36,10 +36,10 @@ twitch_config = OAuthConfig(
 spotify_config = OAuthConfig(
     client_id=SPOTIFY_CLIENT_ID,
     client_secret=SPOTIFY_SECRET,
-    auth_url="https://accounts.google.com/o/oauth2/v2/auth",
+    auth_url="https://accounts.spotify.com/authorize",
     token_url="https://accounts.spotify.com/api/token",
     redirect_uri="http://127.0.0.1:4000",
-    scopes=["https://www.googleapis.com/auth/youtube.readonly"],
+    scopes=[],
     token_file="spotify_tokens.json",
     host="127.0.0.1",
     port=4000,
@@ -49,6 +49,7 @@ spotify_config = OAuthConfig(
 )
 
 twitch_tokens = get_tokens(twitch_config)
+spotify_tokens = get_tokens(spotify_config)
 
 
 # return headers and refresh access token
