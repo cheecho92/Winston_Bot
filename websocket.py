@@ -39,7 +39,7 @@ spotify_config = OAuthConfig(
     auth_url="https://accounts.spotify.com/authorize",
     token_url="https://accounts.spotify.com/api/token",
     redirect_uri="http://127.0.0.1:4000",
-    scopes=[],
+    scopes=["user-modify-playback-state"],
     token_file="spotify_tokens.json",
     host="127.0.0.1",
     port=4000,
@@ -48,11 +48,12 @@ spotify_config = OAuthConfig(
     error_message=b'{"status":"error","message":"spotify auth failed"}'
 )
 
+
 twitch_tokens = get_tokens(twitch_config)
 spotify_tokens = get_tokens(spotify_config)
 
 
-# return headers and refresh access token
+# return twitch headers and refresh access token
 def get_twitch_headers():
     twitch_tokens = get_tokens(twitch_config)
     access_token = twitch_tokens["access_token"]
@@ -77,6 +78,40 @@ def chat_post(message):
         }
     )
     # Return status of post
+    r.raise_for_status()
+
+
+# return headers and refresh access token
+def get_spotify_headers():
+    spotify_tokens = get_tokens(spotify_config)
+    access_token = spotify_tokens["access_token"]
+
+    spotify_headers = {
+    'Authorization': f"Bearer {access_token}",
+    'Content-Type': 'application/json',
+    }
+    return spotify_headers
+
+
+# parse spotify request song id
+def get_song(id):
+    r = requests.get(
+        f"https://api.spotify.com/v1/tracks/{id}",
+        headers=get_spotify_headers(),
+    )
+    # Return status of post
+    r.raise_for_status()
+    response = r.json()
+    song_uri = response["uri"]
+    return song_uri
+
+
+# Add song to current queue
+def add_to_queue(song_uri):
+    r = requests.post(
+    f"https://api.spotify.com/v1/me/player/queue?uri={song_uri}",
+    headers=get_spotify_headers(),
+    )
     r.raise_for_status()
 
 
@@ -117,11 +152,18 @@ async def listen_twitch():
                 text = event["payload"]["event"]["message"]["text"]
                 poster = event["payload"]["event"]["chatter_user_name"]
 
-                if text == "!test":
-                    chat_post(f"@{poster}, thank you for sending a test chat.")
+                if text.lower() == "!lurk":
+                    chat_post(f"@{poster}, you're leaving me alone with my thoughts D:")
+
+                elif text.lower()[:3] == "!sr":
+                    song_id = text[4:]
+                    song_id = song_id.split('https://open.spotify.com/track/')[1]
+                    song_uri = get_song(song_id)
+                    add_to_queue(song_uri)
 
 
-                print(json.dumps(event, indent=4))
+
+
 
 
 
