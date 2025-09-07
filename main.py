@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.13
-from auth import OAuthConfig, get_tokens
+from auth_module import OAuthConfig, get_tokens
 import os
 
 def main():
@@ -9,7 +9,7 @@ def main():
         auth_url="https://id.twitch.tv/oauth2/authorize",
         token_url="https://id.twitch.tv/oauth2/token",
         redirect_uri="http://localhost:3000",
-        scopes=["user:read:chat", "user:write:chat"],
+        scopes=['user:write:chat','user:bot','channel:bot', 'user:read:chat','channel:read:subscriptions'],
         token_file="twitch_tokens.json",
         host="localhost",
         port=3000,
@@ -18,15 +18,15 @@ def main():
         error_message=b"Twitch auth failed."
     )
 
-    youtube_config = OAuthConfig(
+    spotify_config = OAuthConfig(
         client_id=os.getenv("YOUTUBE_CLIENT_ID"),
         client_secret=os.getenv("YOUTUBE_SECRET"),
         auth_url="https://accounts.google.com/o/oauth2/v2/auth",
         token_url="https://oauth2.googleapis.com/token",
-        redirect_uri="http://localhost:4000",
+        redirect_uri="http://127.0.0.1:4000",
         scopes=["https://www.googleapis.com/auth/youtube.readonly"],
-        token_file="youtube_tokens.json",
-        host="localhost",
+        token_file="spotify_tokens.json",
+        host="127.0.0.1",
         port=4000,
         content_type="application/json",
         success_message=b'{"status":"ok","message":"YouTube auth complete!"}',
@@ -36,8 +36,8 @@ def main():
     twitch_tokens = get_tokens(twitch_config)
     print("Twitch access token:", twitch_tokens["access_token"])
 
-    youtube_tokens = get_tokens(youtube_config)
-    print("YouTube access token:", youtube_tokens["access_token"])
+    spotify_tokens = get_tokens(spotify_config)
+    print("YouTube access token:", spotify_tokens["access_token"])
 
 if __name__ == "__main__":
     main()

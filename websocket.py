@@ -39,7 +39,7 @@ spotify_config = OAuthConfig(
     auth_url="https://accounts.spotify.com/authorize",
     token_url="https://accounts.spotify.com/api/token",
     redirect_uri="http://127.0.0.1:4000",
-    scopes=["user-modify-playback-state"],
+    scopes=['user-modify-playback-state user-read-currently-playing'],
     token_file="spotify_tokens.json",
     host="127.0.0.1",
     port=4000,
@@ -92,6 +92,19 @@ def get_spotify_headers():
     }
     return spotify_headers
 
+def disply_current_song():
+     r = requests.get(
+        f"https://api.spotify.com/v1/me/player/currently-playing",
+        headers=get_spotify_headers(),
+    )
+    # Return status of post
+     r.raise_for_status()
+     response = r.json()
+     song_name = response['item']["name"]
+     artist_dict = response['item']["album"]
+     artist_name = artist_dict['artists'][0]['name']
+     return song_name, artist_name
+
 
 # parse spotify request song id
 def get_song(id):
@@ -103,7 +116,11 @@ def get_song(id):
     r.raise_for_status()
     response = r.json()
     song_uri = response["uri"]
-    return song_uri
+    artist_dict = response["album"]["artists"]
+    artist_name = artist_dict[0]["name"]
+    song_name = response["name"]
+    return song_uri, song_name, artist_name
+
 
 
 # Add song to current queue
@@ -113,6 +130,8 @@ def add_to_queue(song_uri):
     headers=get_spotify_headers(),
     )
     r.raise_for_status()
+    
+
 
 
 async def listen_twitch():
@@ -155,11 +174,31 @@ async def listen_twitch():
                 if text.lower() == "!lurk":
                     chat_post(f"@{poster}, you're leaving me alone with my thoughts D:")
 
+                if text.lower() == "ket":
+                    chat_post(f"meow")
+
                 elif text.lower()[:3] == "!sr":
                     song_id = text[4:]
-                    song_id = song_id.split('https://open.spotify.com/track/')[1]
-                    song_uri = get_song(song_id)
-                    add_to_queue(song_uri)
+                    try:
+                        song_id = song_id.split('https://open.spotify.com/track/')[1]
+                        song_info= get_song(song_id)
+                        song_uri = song_info[0]
+                        song_name = song_info[1]
+                        artist_name = song_info[2]
+
+                        try:
+                            add_to_queue(song_uri)
+                            chat_post(f"@{poster}, {song_name} by {artist_name} has been added to the queue.")
+                        except:
+                            chat_post(f"@{poster}, I couldn't add the song. Please ask the dumbass what he broke.")
+
+                    except:
+                        chat_post(f"@{poster}, please don't fuck with me.")
+                elif text.lower() == "!song":
+                    current_song = disply_current_song()
+                    chat_post(f"@{poster}, the current song is {current_song[0]} by {current_song[1]}.")
+
+
 
 
 
