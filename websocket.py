@@ -93,17 +93,29 @@ def get_spotify_headers():
     return spotify_headers
 
 def disply_current_song():
-     r = requests.get(
-        f"https://api.spotify.com/v1/me/player/currently-playing",
+    r = requests.get(
+    f"https://api.spotify.com/v1/me/player/queue",
+    headers=get_spotify_headers(),
+    )
+    r.raise_for_status()
+    response = r.json()
+    song_name = response['currently_playing']['name']
+    artist_name = response['currently_playing']['album']['artists'][0]['name']
+    return song_name, artist_name
+
+
+# used to prevent duplicate requests
+def disply_next_song():
+    r = requests.get(
+        f"https://api.spotify.com/v1/me/player/queue",
         headers=get_spotify_headers(),
     )
-    # Return status of post
-     r.raise_for_status()
-     response = r.json()
-     song_name = response['item']["name"]
-     artist_dict = response['item']["album"]
-     artist_name = artist_dict['artists'][0]['name']
-     return song_name, artist_name
+    r.raise_for_status()
+    response = r.json()
+    song_name = response['queue'][0]['name']
+    artist_name = response['queue'][0]['album']['artists'][0]['name']
+    print(song_name, artist_name)
+    return song_name, artist_name
 
 
 # parse spotify request song id
@@ -174,7 +186,7 @@ async def listen_twitch():
                 if text.lower() == "!lurk":
                     chat_post(f"@{poster}, you're leaving me alone with my thoughts D:")
 
-                if text.lower() == "ket":
+                elif text.lower() == "ket":
                     chat_post(f"meow")
 
                 elif text.lower()[:3] == "!sr":
@@ -194,9 +206,14 @@ async def listen_twitch():
 
                     except:
                         chat_post(f"@{poster}, please don't fuck with me.")
+
                 elif text.lower() == "!song":
                     current_song = disply_current_song()
-                    chat_post(f"@{poster}, the current song is {current_song[0]} by {current_song[1]}.")
+                    chat_post(f"@{poster}, the current song is '{current_song[0]}' by {current_song[1]}.")
+
+                elif text.lower() == "!next":
+                    next_song = disply_next_song()
+                    chat_post(f"@{poster}, the next song is '{next_song[0]}' by {next_song[1]}.")
 
 
 
