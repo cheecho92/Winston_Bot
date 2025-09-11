@@ -24,7 +24,7 @@ twitch_config = OAuthConfig(
     auth_url="https://id.twitch.tv/oauth2/authorize",
     token_url="https://id.twitch.tv/oauth2/token",
     redirect_uri="http://localhost:3000",
-    scopes=['user:write:chat','user:bot','channel:bot', 'user:read:chat','channel:read:subscriptions'],
+    scopes=['user:write:chat','user:bot','channel:bot', 'user:read:chat','channel:read:subscriptions', 'moderator:manage:banned_users'],
     token_file="twitch_tokens.json",
     host="localhost",
     port=3000,
@@ -39,7 +39,7 @@ spotify_config = OAuthConfig(
     auth_url="https://accounts.spotify.com/authorize",
     token_url="https://accounts.spotify.com/api/token",
     redirect_uri="http://127.0.0.1:4000",
-    scopes=['user-modify-playback-state user-read-currently-playing'],
+    scopes=['user-modify-playback-state user-read-currently-playing user-read-playback-state'],
     token_file="spotify_tokens.json",
     host="127.0.0.1",
     port=4000,
@@ -48,7 +48,7 @@ spotify_config = OAuthConfig(
     error_message=b'{"status":"error","message":"spotify auth failed"}'
 )
 
-
+# Get tokens for twitch and spotify
 twitch_tokens = get_tokens(twitch_config)
 spotify_tokens = get_tokens(spotify_config)
 
@@ -64,6 +64,31 @@ def get_twitch_headers():
     }
     return twitch_headers
 
+
+def get_user_id(user):
+    twitch_tokens = get_tokens(twitch_config)
+    access_token = twitch_tokens["access_token"]
+    r = requests.get(
+        f"https://api.twitch.tv/helix/users?login={user}",
+        headers=get_twitch_headers())
+    # Return status of post
+    r.raise_for_status()
+    response = r.json()
+    return response['data'][0]['id']
+
+
+def ban_user(user_id):
+    r = requests.post(
+        f"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={CHEECHO_ID}&moderator_id={BOT_ID}",
+        headers=get_twitch_headers(),
+        json = {
+            'data': {
+                'user_id': user_id
+            }
+        }
+    )
+    # Return status of post
+    r.raise_for_status()
 
 
 # function for twitch chat API post
@@ -114,7 +139,6 @@ def disply_next_song():
     response = r.json()
     song_name = response['queue'][0]['name']
     artist_name = response['queue'][0]['album']['artists'][0]['name']
-    print(song_name, artist_name)
     return song_name, artist_name
 
 
@@ -132,7 +156,6 @@ def get_song(id):
     artist_name = artist_dict[0]["name"]
     song_name = response["name"]
     return song_uri, song_name, artist_name
-
 
 
 # Add song to current queue
@@ -158,6 +181,7 @@ async def listen_twitch():
             message_type = event["metadata"]["message_type"]
             message_id = event["metadata"]["message_id"]
             subscription_type = event.get("metadata", {}).get("subscription_type")
+            ban_list = ["Cheap viewers on", "Cheap viewers at", "Best viewers on", "Best viewers at", "streamboo"]
 
             # Connect to the websocket server by message type
             if message_type == "session_welcome":
@@ -183,6 +207,14 @@ async def listen_twitch():
                 text = event["payload"]["event"]["message"]["text"]
                 poster = event["payload"]["event"]["chatter_user_name"]
 
+                for entry in ban_list:
+                    if entry.lower() in text.lower():
+                        chatbot_id = get_user_id(poster)
+                        ban_user(chatbot_id)
+                        chat_post(f"{poster} get shit on you bot betch.")
+
+
+
                 if text.lower() == "!lurk":
                     chat_post(f"@{poster}, you're leaving me alone with my thoughts D:")
 
@@ -205,15 +237,21 @@ async def listen_twitch():
                             chat_post(f"@{poster}, I couldn't add the song. Please ask the dumbass what he broke.")
 
                     except:
-                        chat_post(f"@{poster}, please don't fuck with me.")
+                        chat_post(f"@{poster}, please don't fuck with me. Use a spotify link.")
 
                 elif text.lower() == "!song":
-                    current_song = disply_current_song()
-                    chat_post(f"@{poster}, the current song is '{current_song[0]}' by {current_song[1]}.")
+                    try:
+                        current_song = disply_current_song()
+                        chat_post(f"@{poster}, the current song is '{current_song[0]}' by {current_song[1]}.")
+                    except:
+                        chat_post(f"@{poster} Sorry, bucco. The player isn't available.")
 
                 elif text.lower() == "!next":
-                    next_song = disply_next_song()
-                    chat_post(f"@{poster}, the next song is '{next_song[0]}' by {next_song[1]}.")
+                    try:
+                        next_song = disply_next_song()
+                        chat_post(f"@{poster}, the next song is '{next_song[0]}' by {next_song[1]}.")
+                    except:
+                        chat_post(f"@{poster} Sorry, bucco. The player isn't available.")
 
 
 
