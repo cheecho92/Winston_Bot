@@ -212,6 +212,7 @@ async def listen_twitch():
                         chatbot_id = get_user_id(poster)
                         ban_user(chatbot_id)
                         chat_post(f"{poster} get shit on you bot betch.")
+                        break
 
 
 
