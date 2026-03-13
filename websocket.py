@@ -5,8 +5,11 @@ import json
 import requests
 import os
 from dotenv import load_dotenv
-#from oauth import get_tokens, CLIENT_ID, CHEECHO_ID, BOT_ID
+#from oauth import get_tokens, CLIENT_ID, KITTY_ID, BOT_ID
 from auth_module import OAuthConfig, get_tokens
+
+# PUt in a handle when banning that if the ban fails the bot doesnt break
+
 
 # Twitch websocket uri and headers Constants
 load_dotenv()
@@ -16,7 +19,7 @@ TWITCH_SECRET=os.getenv("TWITCH_SECRET")
 SPOTIFY_CLIENT_ID=os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_SECRET=os.getenv("SPOTIFY_SECRET")
 BOT_ID=os.getenv("BOT_ID")
-CHEECHO_ID=os.getenv("CHEECHO_ID")
+KITTY_ID=os.getenv("KITTY_ID")
 
 twitch_config = OAuthConfig(
     client_id=TWITCH_CLIENT_ID,
@@ -79,7 +82,7 @@ def get_user_id(user):
 
 def ban_user(user_id):
     r = requests.post(
-        f"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={CHEECHO_ID}&moderator_id={BOT_ID}",
+        f"https://api.twitch.tv/helix/moderation/bans?broadcaster_id={KITTY_ID}&moderator_id={BOT_ID}",
         headers=get_twitch_headers(),
         json = {
             'data': {
@@ -97,7 +100,7 @@ def chat_post(message):
         "https://api.twitch.tv/helix/chat/messages",
         headers=get_twitch_headers(),
         data={
-            "broadcaster_id": CHEECHO_ID,
+            "broadcaster_id": KITTY_ID,
             "sender_id": BOT_ID,
             "message": message,
         }
@@ -181,7 +184,7 @@ async def listen_twitch():
             message_type = event["metadata"]["message_type"]
             message_id = event["metadata"]["message_id"]
             subscription_type = event.get("metadata", {}).get("subscription_type")
-            ban_list = ["Cheap viewers on", "Cheap viewers at", "Best viewers on", "Best viewers at", "streamboo"]
+            ban_list = ["Cheap viewers on", "Cheap viewers at", "Best viewers on", "Best viewers at", "streamboo", "nezhna", "check out our website:"]
 
             # Connect to the websocket server by message type
             if message_type == "session_welcome":
@@ -193,7 +196,7 @@ async def listen_twitch():
                 "type": "channel.chat.message",
                 "version": "1",
                 "condition": {
-                    "broadcaster_user_id": CHEECHO_ID,
+                    "broadcaster_user_id": KITTY_ID,
                     "user_id": BOT_ID,
                 },
                 "transport": {
@@ -256,15 +259,11 @@ async def listen_twitch():
 
 
 
-
-
-
-
-
-
 async def main():
     await listen_twitch()
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
