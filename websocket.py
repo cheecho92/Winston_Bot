@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from auth_module import OAuthConfig, get_tokens
 
 # PUt in a handle when banning that if the ban fails the bot doesnt break
-
+#TEEEEEEEST
 
 # Twitch websocket uri and headers Constants
 load_dotenv()
