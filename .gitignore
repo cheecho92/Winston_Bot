@@ -7,8 +7,8 @@ bin/
 __pycache__/
 
 #general files
-twitch_tokens.json
-spotify_tokens.json
+twitch_token.json
+spotify_token.json
 test.py
-scratch.txt
 json*
+*txt
