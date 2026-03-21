@@ -4,7 +4,7 @@ This is going to be a quick and dirty README for now.
 
 *Config* - a dataclass to hold information for authentication
 
-*RedirectHandler* - info to handle REST method on temp HTTP server
+*RedirectHandler* - info to handle internal GET call on temp HTTP server
 
 
 # Authentication
