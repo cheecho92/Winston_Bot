@@ -39,11 +39,11 @@ def get_user_info(poster, config):
     if len(response['data']) == 1:
         return
     else:
-        user, broadcaster = response['data']
+        broadcaster, user = response['data']
+        broadcaster_display_name = broadcaster['display_name']
         user_id = user['id']
         user_display_name = user['display_name']
-        broadcaster_display_name = broadcaster['display_name']
-        return user_id, user_display_name, broadcaster_display_name
+        return broadcaster_display_name, user_id, user_display_name, 
 
 
 # function for twitch chat API post
@@ -66,7 +66,7 @@ def ban_user(poster, config):
         chat_post(config, "Very funny. You're hilarious.")
         return
     else:
-        user_id, user_display_name, broadcaster_display_name = user_info
+        broadcaster_display_name, user_id, user_display_name = user_info
         
     try:
         req = api_call(
@@ -115,10 +115,14 @@ def eventsub_handler(config, event):
 def parse_payload(payload):
     if 'event' not in payload:
         raise KeyError(("No event in payload. Continuing."))
+    event_type = payload['subscription']['type']
+
+    if event_type == "channel.follow":
+        follower = payload['event']['user_name']
+        return event_type, follower, None, None
+    
     poster = payload['event']['chatter_user_name']
     text = payload ['event']['message']['text']
-    if "https://open.spotify.com/track" in text:
-        return poster, text
-    else:
+    if "https://open.spotify.com/track" not in text:
         text = text.lower()
-        return poster, text
+    return event_type, None, poster, text

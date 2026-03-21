@@ -20,31 +20,35 @@ async def listen_twitch():
 
             # Parses information from event payload
             try:
-                poster, text = parse_payload(payload)
+                event_type, follower, poster, text = parse_payload(payload)
             except KeyError:
                 continue
 
+            if event_type == "channel.follow":
+                chat_post(twitch, f"@{follower}, thanks for the follow!")
 
-            # Check if text is in banned phrases. Ban user if it is.
-            if text in banned_phrases:
-                ban_user(poster, twitch)
+            elif poster and text:
 
-            # responsd to lurk command
-            elif text == "!lurk":
-                chat_post(twitch, f"@{poster}... Fine. I didn't want you here anyway... BigSad")
+                # Check if text is in banned phrases. Ban user if it is.
+                if text in banned_phrases:
+                    ban_user(poster, twitch)
 
-            # Meow
-            elif text == "ket":
-                chat_post(twitch, "meow")
+                # responsd to lurk command
+                elif text == "!lurk":
+                    chat_post(twitch, f"@{poster}... Fine. I didn't want you here anyway... BigSad")
 
-            # Handle song requests. The 35 slice removes https://open.spotify.com/track/ from the text
-            elif text[:3] == "!sr":
-                try:
-                    song_uri, song_name, artist_name = get_song_info(text[35:], spotify, poster, twitch)
-                    add_to_queue(song_uri, song_name, artist_name, spotify, poster, twitch)
-                except ValueError:
-                    continue
+                # Meow
+                elif text == "ket":
+                    chat_post(twitch, "meow")
 
-            # Check for current or next song
-            elif text == "!song" or text == "!next":
-                check_queue(poster, text, spotify, twitch)
+                # Handle song requests. The 35 slice removes https://open.spotify.com/track/ from the text
+                elif text[:3] == "!sr":
+                    try:
+                        song_uri, song_name, artist_name = get_song_info(text[35:], spotify, poster, twitch)
+                        add_to_queue(song_uri, song_name, artist_name, spotify, poster, twitch)
+                    except ValueError:
+                        continue
+
+                # Check for current or next song
+                elif text == "!song" or text == "!next":
+                    check_queue(poster, text, spotify, twitch)
