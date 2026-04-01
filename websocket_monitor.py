@@ -2,7 +2,7 @@
 import websockets
 from twitch_calls import eventsub_handler, parse_payload, chat_post, ban_user
 from handler_functions import handle_praise, handle_discord, handle_kappa, handle_ket, handle_lurk, handle_next, handle_request, handle_song
-from auth import spotify, twitch
+from configs import twitch, spotify
 
 
 # command dictionary. Passes poster and text through lambda to call them in the event loop
@@ -45,13 +45,15 @@ async def listen_twitch():
 
             elif poster and text:
 
+                # parse command from text
+                command = text.split()[0]
+
                 # Check if text is in banned phrases. Ban user if it is.
                 if text in banned_phrases:
                     ban_user(poster, twitch)
 
                 # call the command list based on the first word in 'text.' Edge case is needed for !sr, as it must intake user text.
-                command = text.split()[0]
-                if command in command_dict:
+                elif command in command_dict:
                     try:
                         command_dict[command](poster, text)
                     except ValueError:

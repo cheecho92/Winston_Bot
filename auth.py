@@ -1,19 +1,14 @@
 #!/usr/bin/env python3.13
 import json
 import requests
-import os
 import string
+import os
 import secrets
 import subprocess
 from urllib.parse import urlencode
 from auth_handler import RedirectHandler
 from http.server import HTTPServer
-from auth_dataclass import Config
-from dotenv import load_dotenv
 
-
-# Load the env variables
-load_dotenv()
 
 # Generates a randomized state string
 def random_string_generator():
@@ -131,39 +126,3 @@ def api_call(config, method, url, **kwargs):
         req = method(url, **kwargs)
     req.raise_for_status()
     return req
-
-
-# Twitch dataclass info
-twitch = Config(
-    name = "twitch",
-    client_id = os.getenv("TWITCH_CLIENT_ID"),
-    client_secret = os.getenv("TWITCH_SECRET"),
-    auth_uri = "https://id.twitch.tv/oauth2/authorize",
-    token_uri = "https://id.twitch.tv/oauth2/token",
-    scopes = ['user:write:chat','user:bot','channel:bot', 'user:read:chat','moderator:read:followers', 'moderator:manage:banned_users','moderator:read:suspicious_users'],
-    api_uri = "https://api.twitch.tv/helix/",
-    browser = "waterfox",
-    channel = os.getenv("CHEECHO_ID"),
-    channel_name = "cheehco",
-    bot = os.getenv("BOT_ID"),
-    discord = os.getenv("DISCORD_LINK"),
-    token_file = "twitch_token.json",
-    content_type = {'Content-Type': "application/x-www-form-urlencoded"}
-)
-
-# Spotify dataclass info
-spotify = Config(
-    name = "spotify",
-    client_id = os.getenv("SPOTIFY_CLIENT_ID"),
-    client_secret = os.getenv("SPOTIFY_SECRET"),
-    auth_uri = "https://accounts.spotify.com/authorize",
-    token_uri = "https://accounts.spotify.com/api/token",
-    scopes = ['user-modify-playback-state user-read-currently-playing user-read-playback-state'],
-    api_uri = "https://api.spotify.com/v1/",
-    browser = "waterfox",
-    token_file = "spotify_token.json",
-    host = "127.0.0.1",
-    port = 4000,
-    redirect_uri = "http://127.0.0.1:4000",
-    content_type = {"Content-Type": "application/x-www-form-urlencoded"}
-)
