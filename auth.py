@@ -23,16 +23,16 @@ def random_string_generator():
 
 
 # Open a private browser session for the OAuth session
-def open_private_browser(url):
-    subprocess.Popen(['waterfox', '--private-window', url])
+def open_private_browser(browser, url):
+    subprocess.Popen([browser, '--private-window', url])
 
 
 # Generates a temp local webserver to handle redirect uris using HTTPServer and auth_handler
 # Might want to revisit to apply a nonce
-def retrieve_redirect_code(uri, host, port, state):
+def retrieve_redirect_code(browser, uri, host, port, state):
     server = HTTPServer((host, port), RedirectHandler)
     server.state = state
-    open_private_browser(uri)
+    open_private_browser(browser, uri)
     server.handle_request()
     code = server.code
     server.server_close()
@@ -97,7 +97,7 @@ def handle_tokens(config):
     else:
         state_string = random_string_generator()
         auth_uri = url_parser(config, config.auth_uri, state_string)
-        code = retrieve_redirect_code(auth_uri, config.host, config.port, state_string)
+        code = retrieve_redirect_code(config.browser, auth_uri, config.host, config.port, state_string)
 
         params = {
         "client_id": config.client_id,
@@ -142,8 +142,11 @@ twitch = Config(
     token_uri = "https://id.twitch.tv/oauth2/token",
     scopes = ['user:write:chat','user:bot','channel:bot', 'user:read:chat','moderator:read:followers', 'moderator:manage:banned_users','moderator:read:suspicious_users'],
     api_uri = "https://api.twitch.tv/helix/",
+    browser = "waterfox",
     channel = os.getenv("CHEECHO_ID"),
+    channel_name = "cheehco",
     bot = os.getenv("BOT_ID"),
+    discord = os.getenv("DISCORD_LINK"),
     token_file = "twitch_token.json",
     content_type = {'Content-Type': "application/x-www-form-urlencoded"}
 )
@@ -157,6 +160,7 @@ spotify = Config(
     token_uri = "https://accounts.spotify.com/api/token",
     scopes = ['user-modify-playback-state user-read-currently-playing user-read-playback-state'],
     api_uri = "https://api.spotify.com/v1/",
+    browser = "waterfox",
     token_file = "spotify_token.json",
     host = "127.0.0.1",
     port = 4000,

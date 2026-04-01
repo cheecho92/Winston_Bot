@@ -30,7 +30,7 @@ def build_eventsubs(config, session_id):
 def get_user_info(poster, config):
     req = api_call(
         config, requests.get,
-        f"{config.api_uri}users?login={poster}&id={config.channel}",
+        f"{config.api_uri}users?login={poster}&login={config.channel_name}",
         headers=config.headers
     )
     
@@ -38,12 +38,15 @@ def get_user_info(poster, config):
 
     if len(response['data']) == 1:
         return
-    else:
-        broadcaster, user = response['data']
-        broadcaster_display_name = broadcaster['display_name']
-        user_id = user['id']
-        user_display_name = user['display_name']
-        return broadcaster_display_name, user_id, user_display_name, 
+    
+    users = {u['login']: u for u in response['data']}
+    broadcaster = users[config.channel_name]
+    user = users[poster]
+
+    broadcaster_display_name = broadcaster['display_name']
+    user_id = user['id']
+    user_display_name = user['display_name']
+    return broadcaster_display_name, user_id, user_display_name
 
 
 # function for twitch chat API post
@@ -120,6 +123,10 @@ def parse_payload(payload):
     if event_type == "channel.follow":
         follower = payload['event']['user_name']
         return event_type, follower, None, None
+    
+    if event_type == "channel.suspicious_user.message":
+        poster = payload['event']['user_name']
+        return event_type, None, poster, None
     
     poster = payload['event']['chatter_user_name']
     text = payload ['event']['message']['text']
