@@ -46,7 +46,7 @@ async def listen_twitch():
                 chat_post(twitch, message['commands']['follow'].format(follower=follower))
 
             elif event_type == "channel.suspicious_user.message":
-                ban_user(poster, twitch)
+                ban_user(poster, twitch, message)
 
             elif poster and text:
 
@@ -55,7 +55,7 @@ async def listen_twitch():
 
                 # Check if text is in banned phrases. Ban user if it is.
                 if text in banned_phrases:
-                    ban_user(poster, twitch)
+                    ban_user(poster, twitch, message)
 
                 # call the command list based on the first word in 'text.' Edge case is needed for !sr, as it must intake user text.
                 elif command in command_dict:

@@ -33,7 +33,7 @@ def handle_discord(twitch_config, message):
 
 def handle_request(text, spotify_config, poster, twitch_config, message):
     try:
-        song_uri, song_name, artist_name = get_song_info(text[35:], spotify_config, poster, twitch_config)
+        song_uri, song_name, artist_name = get_song_info(text[35:], spotify_config, poster, twitch_config, message)
         add_to_queue(song_uri, song_name, artist_name, spotify_config, poster, twitch_config, message)
     except ValueError:
         raise
