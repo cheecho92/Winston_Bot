@@ -11,5 +11,6 @@ twitch_token.json
 spotify_token.json
 test.py
 json*
-*txt
+banned_phrases.txt
+scratch.txt
 configs.py
