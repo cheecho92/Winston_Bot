@@ -24,7 +24,7 @@ async def listen_twitch(bot, spotify):
             "good": lambda poster, text, message: handle_praise(poster, text, bot, message),
         }
 
-        with open('banned_phrases.txt') as f:
+        with open(os.getenv("BANNED_PHRASES_FILE")) as f:
             banned_phrases = [line.rstrip() for line in f]
 
         with open(os.getenv("MESSAGE_FILE")) as f:
