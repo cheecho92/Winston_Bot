@@ -15,12 +15,13 @@ spec.loader.exec_module(module)
 
 bot = module.bot
 broadcaster = module.broadcaster
-spotify = module.spotify
+spotify = getattr(module, 'spotify',None)
 
 async def main():
     handle_tokens(bot)
     handle_tokens(broadcaster)
-    handle_tokens(spotify)
+    if spotify:
+        handle_tokens(spotify)
     await listen_twitch(bot, spotify)
 
 if __name__ == "__main__":

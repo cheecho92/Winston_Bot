@@ -12,17 +12,20 @@ load_dotenv()
 async def listen_twitch(bot, spotify):
     async with websockets.connect("wss://eventsub.wss.twitch.tv/ws?keepalive_timeout_seconds=30") as ws:
         print("Connected to Twitch EventSub WebSocket")
-
         command_dict = {
             "!lurk": lambda poster, text, message: handle_lurk(poster, bot, message),
             "ket": lambda poster, text, message: handle_ket(bot, message),
             "kappa": lambda poster, text, message: handle_kappa(poster, bot, message),
-            "!song": lambda poster, text, message: handle_song(poster, text, spotify, bot, message),
-            "!next": lambda poster, text, message: handle_next(poster, text, spotify, bot, message),
             "!discord": lambda poster, text, message: handle_discord(bot, message),
-            "!sr": lambda poster, text, message: handle_request(text, spotify, bot, poster, message),
             "good": lambda poster, text, message: handle_praise(poster, text, bot, message),
-        }
+	}
+
+        if spotify:
+            command_dict.update({
+                "!song": lambda poster, text, message: handle_song(poster, text, spotify, bot, message),
+                "!next": lambda poster, text, message: handle_next(poster, text, spotify, bot, message),
+                "!sr": lambda poster, text, message: handle_request(text, spotify, bot, poster, message),
+            }) 
 
         with open(os.getenv("BANNED_PHRASES_FILE")) as f:
             banned_phrases = [line.rstrip() for line in f]
