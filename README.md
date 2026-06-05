@@ -1,23 +1,63 @@
-This is going to be a quick and dirty README for now.
+# Winston_Bot
 
-# Classes 
+Winston is a Twitch chat bot built around my wonderful cat. It connects to Twitch's EventSub WebSocket to listen for chat messages and responds to commands for moderation and Spotify song queue management.
 
-*Config* - a dataclass to hold information for authentication
+![Winston](assets/winston.jpg)
 
-*RedirectHandler* - info to handle internal GET call on temp HTTP server
+## What it does
 
+**Moderation** — Monitors chat for messages matching a banned phrases list and automatically bans the user. Handles edge cases like attempting to ban the broadcaster, mods, or any mod/bot conflicts.
 
-# Authentication
+**Song requests** — Chatters can request songs by posting a Spotify track link. The bot looks up the track, adds it to the streamer's queue, and responds with the success of failure of the request. It also handles edge cases where spotify is paused or not open.
 
-oAuth is handled by auth.py. It uses the dataclass data to create the oAuth link, and stands up a temp local HTTP server to handle the redirect URL and retrieve the code needed for the final POST call. Finally, the handle_tokens function is called. This will check to see if an existing json file with token information is available. If it is not, it will proceed with the POST to the twitch token uri, and use the response to generate the token. 
+**Chat commands**
 
-I included the api_call function here. This functions purpose is to wrap any method with error handling for any 401 responses. If a 401 is generated, the function will call handle_tokens and use the refresh code to update the token json.
+| Command | Description |
+|---|---|
+| `!sr https://open.spotify.com/track/` | Add a song to the Spotify queue |
+| `!song` | Show the currently playing song |
+| `!next` | Show the next song in the queue |
+| `!lurk` | Acknowledge a lurker in chat |
+| Various fun hidden commands :] | I get bored |
 
+## How it works
 
-# Method Files
+On startup, `main.py` loads Twitch and Spotify tokens via `handle_tokens`, then opens a persistent async WebSocket connection to `wss://eventsub.wss.twitch.tv/ws`. When the session welcome message arrives, the bot subscribes to scoped EventSub event types.
 
-There are two method files. twitch_calls.py and spotify_calls.py. These contain all functions needed to handle any twitch and spotify API interaction.
+## Files
 
-# Websocket connection
+| File | Description |
+|---|---|
+| `main.py` | loads tokens and starts the WebSocket listener |
+| `websocket_monitor.py` | EventSub connection and chat command routing logic |
+| `twitch_calls.py` | Contains all twitch API related modules |
+| `spotify_calls.py` | Contains all spotify API related modules |
+| `auth.py` | Token loading and refresh logic |
+| `auth_dataclass.py` | Config dataclass for Twitch and Spotify credentials |
+| `banned_phrases.txt` | Line-separated list of phrases that trigger an auto-ban. I have left some common phrases, but it can be edited as needed. |
 
-websocket_monitor.py contains the build of the logic for this bot. It connections to twitchs event subscriptions using pythons websocket library. After listen_twitch is called the websocket connection is formed with async for a consistent monitor. The payload is extracted from events, parsed for data needed, and fed to the connections logic. 
+## Setup
+
+### Prerequisites
+
+- Python >= 3.12
+- [`winston_shared`](https://github.com/cheecho92/winston_shared) installed
+- Twitch and Spotify tokens generated using [`flask_server`](https://github.com/cheecho92/flask_server)
+
+### Install
+
+```bash
+pip install -r requirements.txt
+pip install -e /path/to/winston_shared
+```
+
+### Run
+
+```bash
+python main.py
+```
+
+## Related
+
+- [`flask_server`](https://github.com/cheecho92/flask_server) — OAuth server that uses this package to handle auth flows and save tokens
+- [`winston_shared`](https://github.com/cheecho92/winston_shared) — shared auth logic and tokens used by both services
